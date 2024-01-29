@@ -22,15 +22,16 @@ import java.util.Map;
 public class BatchSchedulerController {
 
     private final BatchService batchService;
-
-    @GetMapping("/list")
-    public ApiResponse<List<BatchScheduleDto>> selectBatchJobList() throws SchedulerException {
-        return new ApiResponse<>(true, batchService.getAllJobs());
-    }
+    /** Batch Job 등록 */
     @PostMapping("/job")
     public ApiResponse<String> insertBatchJob(@RequestBody BatchScheduleDto jobDto) {
         return null;
     }
+    @GetMapping("/list")
+    public ApiResponse<List<BatchScheduleDto>> selectBatchJobList() throws SchedulerException {
+        return new ApiResponse<>(true, batchService.getAllJobs());
+    }
+
     @PutMapping("/job")
     public ApiResponse<String> updateBatchJob(@RequestBody BatchScheduleDto jobDto) {
         return null;

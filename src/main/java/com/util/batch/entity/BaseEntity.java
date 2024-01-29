@@ -36,13 +36,14 @@ public abstract class BaseEntity {
     @LastModifiedDate
     @Column(name = "modi_dati")
     private LocalDateTime modiDate;
-    /** AuditorAware 구현 필요 */
+    /** AuditorAware, Spring Security 구현 필요 */
     @CreatedBy
     @Column(updatable = false, name = "created_by")
     private String createdBy;
     @LastModifiedBy
     @Column(name = "last_modified_by")
     private String lastModifiedBy;
+    /************************/
     @Column(name = "sys_memo")
     private String sysMemo;
 }

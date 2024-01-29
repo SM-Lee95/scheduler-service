@@ -25,11 +25,13 @@ repositories {
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-quartz")
-    //implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
-    //implementation("org.thymeleaf.extras:thymeleaf-extras-springsecurity6")
+    implementation("org.thymeleaf.extras:thymeleaf-extras-springsecurity6")
+    implementation("nz.net.ultraq.thymeleaf:thymeleaf-layout-dialect")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0")
     implementation("org.modelmapper:modelmapper:3.1.1")
     compileOnly("org.projectlombok:lombok")
     runtimeOnly("org.mariadb.jdbc:mariadb-java-client")
@@ -38,9 +40,25 @@ dependencies {
     providedRuntime("org.springframework.boot:spring-boot-starter-tomcat")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.projectreactor:reactor-test")
-    //testImplementation("org.springframework.security:spring-security-test")
+    testImplementation("org.springframework.security:spring-security-test")
 }
-
+sourceSets {
+    val profile = try {
+        if (project.hasProperty("profile")) project.property("profile").toString()
+        else "dev"
+    } catch (e: Exception) {"dev"}
+    main {
+        java.srcDirs("src/main/java")
+        resources {
+            srcDirs(listOf("src/main/resources", "src/main/resources-$profile"))
+        }
+    }
+}
+tasks {
+    processResources {
+        duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.INCLUDE
+    }
+}
 tasks.withType<Test> {
     useJUnitPlatform()
 }
