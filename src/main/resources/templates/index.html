@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<div th:replace="~{fragment/config :: config}"></div>
+<body id="page-top">
+    <div id="wrapper">
+        <div th:replace="~{fragment/sidebar :: sidebar}"></div>
+        <div id="content-wrapper" class="d-flex flex-column">
+            <div id="content">
+                <div th:replace="~{fragment/header :: header}"></div>
+                <div class="container-fluid" th:replace="~{fragment/items :: items}">
+                </div>
+            </div>
+            <div th:replace="~{fragment/footer :: footer}"></div>
+        </div>
+    </div>
+    <a class="scroll-to-top rounded" href="#page-top">
+        <i class="fas fa-angle-up"></i>
+    </a>
+    <div th:replace="~{fragment/modal :: modal}"></div>
+</body>
+</html>
