@@ -14,8 +14,6 @@ spring:
   devtools:
     livereload:
       enabled: true
-  thymeleaf:
-    cache: false
   h2:
     console:
       enabled: true
@@ -44,6 +42,13 @@ spring:
         dialect: org.hibernate.dialect.H2Dialect
         format_sql: true
         show_sql: true
+  thymeleaf:
+    check-template-location: true
+    prefix: classpath:/templates/
+    suffix: .html
+    cache: false
+  mvc:
+    static-path-pattern: /static/** # spring mvc 정적경로 변경
 
 logging:
   level:
