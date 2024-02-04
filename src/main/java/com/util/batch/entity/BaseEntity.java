@@ -31,19 +31,11 @@ import java.time.LocalDateTime;
 @EntityListeners(AuditingEntityListener.class) //해당 클래스에 Auditing 기능을 포함
 public abstract class BaseEntity {
     @CreatedDate
-    @Column(name = "reg_dati", updatable = false)
+    @Column(name = "reg_date", updatable = false)
     private LocalDateTime regDate;
     @LastModifiedDate
-    @Column(name = "modi_dati")
+    @Column(name = "modi_date")
     private LocalDateTime modiDate;
-    /** AuditorAware, Spring Security 구현 필요 */
-    @CreatedBy
-    @Column(updatable = false, name = "created_by")
-    private String createdBy;
-    @LastModifiedBy
-    @Column(name = "last_modified_by")
-    private String lastModifiedBy;
-    /************************/
     @Column(name = "sys_memo")
     private String sysMemo;
 }

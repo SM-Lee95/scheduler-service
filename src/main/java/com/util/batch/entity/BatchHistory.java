@@ -27,17 +27,24 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class BatchHistory extends BaseEntity {
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    private LocalDateTime startDati;
-    private LocalDateTime endDati;
+    @Column(name="start_date")
+    private LocalDateTime startDate;
+    @Column(name="end_date")
+    private LocalDateTime endDate;
+    @Column(name="exc_date")
     private Long excTime;
-    private String resMsg;
-    private String resStatus;
+    @Column(name="result_msg")
+    private String resultMsg;
+    @Column(name="result_status")
+    private String resultStatus;
+    @Column(name="is_manual")
     private String isManual;
     @ManyToOne
     @JoinColumn(name = "batch_id")
     private BatchSchedule batchSchedule;
     public void calculateExecutionTime() {
-        this.setExcTime(Duration.between(startDati, endDati).getSeconds());
+        this.setExcTime(Duration.between(startDate, endDate).getSeconds());
     }
 }

@@ -1,8 +1,8 @@
 package com.util.batch.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Data;
+import org.springframework.context.annotation.Primary;
 
 /***************************************************
  *
@@ -22,12 +22,14 @@ import lombok.Data;
 @Data
 public class BatchSchedule extends BaseEntity {
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    private String groupName;
-    private String jobName;
-    private String jobDesc;
-    private String cronExp;
-    private String trgName;
+    @Column(unique = true)
+    private String name;
+    private String description;
+    @Column(name="cron_expression")
+    private String cronExpression;
     private String url;
+    @Column(name="pause_yn")
     private String pauseYn;
 }

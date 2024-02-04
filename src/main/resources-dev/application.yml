@@ -59,4 +59,4 @@ nateon:
   webhookuri: /bf30d923/ZWQvZ4UoqYJN8KEf8ZLnWg6J
 
 batch:
-  url: http://localhost:8088/batch/
+  url: http://localhost:8081/batch/

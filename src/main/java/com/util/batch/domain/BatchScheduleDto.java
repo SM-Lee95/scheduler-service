@@ -1,8 +1,11 @@
 package com.util.batch.domain;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import jakarta.persistence.Column;
+import jakarta.persistence.Id;
 import lombok.Builder;
 import lombok.Data;
+import org.quartz.JobDataMap;
 
 /***************************************************
  *
@@ -23,11 +26,21 @@ import lombok.Data;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class BatchScheduleDto {
     private Long id;
-    private String groupName;
-    private String jobName;
-    private String jobDesc;
-    private String cronExp;
-    private String trgName;
+    private String name;
+    private String description;
+    private String cronExpression;
     private String url;
     private String pauseYn;
+    private String scheduleTime;
+    private String lastFiredTime;
+    private String nextFireTime;
+    private JobDataMap jobDataMap;
+    public void setJobDataMapSelf() {
+        JobDataMap jobDataMap = new JobDataMap();
+        jobDataMap.put("name", this.name);
+        jobDataMap.put("description", this.description);
+        jobDataMap.put("url", this.url);
+
+        this.jobDataMap = jobDataMap;
+    }
 }

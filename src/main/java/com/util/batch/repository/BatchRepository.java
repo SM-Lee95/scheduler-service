@@ -3,6 +3,8 @@ package com.util.batch.repository;
 import com.util.batch.entity.BatchSchedule;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.Optional;
+
 
 /***************************************************
  *
@@ -19,4 +21,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
  *
  ****************************************************/
 public interface BatchRepository extends JpaRepository<BatchSchedule, Long> {
+    Optional<BatchSchedule> findByName(String name);
 }

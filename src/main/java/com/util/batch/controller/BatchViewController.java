@@ -1,13 +1,8 @@
 package com.util.batch.controller;
 
-import com.util.batch.domain.BatchScheduleDto;
-import com.util.batch.util.ApiResponse;
-import org.quartz.SchedulerException;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-
-import java.util.List;
 
 /**
  * packageName    : com.util.batch.controller
@@ -23,8 +18,8 @@ import java.util.List;
 @Controller
 @RequestMapping("/view")
 public class BatchViewController {
-    @GetMapping("/list")
-    public ApiResponse<List<BatchScheduleDto>> selectBatchJobList() throws SchedulerException {
-        return new ApiResponse<>(true, null);
+    @GetMapping("/info")
+    public String schedulerHistoryInfo(){
+        return "item";
     }
 }

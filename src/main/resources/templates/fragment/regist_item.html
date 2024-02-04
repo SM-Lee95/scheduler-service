@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<body>
+<li th:fragment="regist-item" class="nav-item dropdown no-arrow mx-1 ">
+    <a class="btn btn-primary btn-icon-split" href="#" data-toggle="modal" data-target="#registModal">
+        <span class="icon text-white-50"> <i class="fas fa-plus"></i></span>
+    </a>
+    <div class="modal fade" id="registModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Regist Scheduler Item</h5>
+                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <div class="text-xs font-weight-bold text-primary mb-1">Name</div>
+                        <input type="text" class="form-control form-control-user" id="name"
+                               placeholder="ex) Email Job">
+                    </div>
+                    <div class="form-group">
+                        <div class="text-xs font-weight-bold text-primary mb-1">Description</div>
+                        <input type="text" class="form-control form-control-user" id="description"
+                               placeholder="ex) 이메일 송부 로직">
+                    </div>
+                    <div class="form-group">
+                        <div class="text-xs font-weight-bold text-primary mb-1">Cron Expression</div>
+                        <input type="text" class="form-control form-control-user" id="expression"
+                               placeholder="ex) 0/20 * * * * ?">
+                    </div>
+                    <div class="form-group">
+                        <div class="text-xs font-weight-bold text-primary mb-1">URL</div>
+                        <input type="text" class="form-control form-control-user" id="url"
+                               placeholder="ex) email/send ">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                    <a class="btn btn-primary" href="javascript:insertSchedulerInfo()">Confirm</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        function insertSchedulerInfo() {
+            if (!validationCheck()) {
+                return;
+            }
+            let data = new Object();
+            data.name = $("#name").val();
+            data.description = $("#description").val();
+            data.cronExpression = $("#expression").val();
+            data.url = $("#url").val();
+            data.pauseYn = 'N';
+            $.ajax({
+                type: 'POST',
+                url: '/schedule/job',
+                headers: {"Content-Type": "application/json"},
+                data: JSON.stringify(data),
+                success: function (result) {
+                    if(result.success){
+                        alert("등록을 완료했습니다.");
+                    }else
+                        alert(result.data);
+                },
+                error: function (request, status, error) {
+                    alert("알 수 없는 오류가 발생 했습니다.");
+                    console.error(error);
+                }
+            })
+        }
+
+        function validationCheck() {
+            if($("#name").val().length < 4 || $("#name").val().length > 10){
+                alert("이름은 4글자 이상 10글자 이하로 제한합니다.");
+                return false;
+            }
+            if($("#description").val().length < 1){
+                alert("설명을 입력해주세요.");
+                return false;
+            }
+            if($("#expression").val().length < 11){
+                alert("유효한 Cron Expression을 입력해주세요.");
+                return false;
+            }
+            if($("#url").val().length < 1){
+                alert("유효한 URL을 입력해주세요.");
+                return false;
+            }
+            return true;
+        }
+    </script>
+</li>
+</body>
+</html>

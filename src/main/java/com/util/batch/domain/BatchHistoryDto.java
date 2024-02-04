@@ -1,6 +1,8 @@
 package com.util.batch.domain;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import jakarta.persistence.Column;
+import jakarta.persistence.Id;
 import lombok.Builder;
 import lombok.Data;
 
@@ -25,12 +27,11 @@ import java.time.LocalDateTime;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class BatchHistoryDto {
     private Long id;
-    private String groupName;
-    private String jobName;
-    private LocalDateTime startDati;
-    private LocalDateTime endDati;
+    private String name;
+    private LocalDateTime startDate;
+    private LocalDateTime endDate;
     private Long excTime;
-    private String resMsg;
-    private String resStatus;
+    private String resultMsg;
+    private String resultStatus;
     private String isManual;
 }
