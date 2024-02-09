@@ -1,6 +1,7 @@
 package com.util.batch.service;
 
 import com.util.batch.domain.BaseResponseBody;
+import com.util.batch.domain.BatchHistoryDto;
 import com.util.batch.domain.BatchScheduleDto;
 import com.util.batch.entity.BatchHistory;
 import com.util.batch.entity.BatchSchedule;
@@ -22,11 +23,15 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /***************************************************
@@ -86,8 +91,8 @@ public class BatchService {
         if (apiResponse.getStatusCode() != 200) errorMessage = apiResponse.getMessage();
         BatchHistory batchHistory = BatchHistory.builder()
                 .batchSchedule(batchRepository.findByName(jobKey.getName()).get())
-                .startDate(LocalDateTime.ofEpochSecond(startTime, 0, ZoneOffset.UTC))
-                .endDate(LocalDateTime.ofEpochSecond(endTime, 0, ZoneOffset.UTC))
+                .startDate(Instant.ofEpochMilli(startTime).atZone(ZoneId.systemDefault()).toLocalDateTime())
+                .endDate(Instant.ofEpochMilli(endTime).atZone(ZoneId.systemDefault()).toLocalDateTime())
                 .isManual(isManual)
                 .resultMsg(errorMessage)
                 .resultStatus(apiResponse.getStatusCode() == 200 ? "S" : "F")
@@ -102,15 +107,20 @@ public class BatchService {
     public List<BatchScheduleDto> getAllJobs() throws SchedulerException {
         List<BatchScheduleDto> jobs = new ArrayList<>();
         Scheduler scheduler = schedulerFactoryBean.getScheduler();
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         for (String groupName : scheduler.getJobGroupNames()) {
             for (JobKey jobKey : scheduler.getJobKeys(GroupMatcher.jobGroupEquals(groupName))) {
-                List<Trigger> triggers = (List<Trigger>) scheduler.getTriggersOfJob(jobKey);
                 JobDataMap dataMap = getJobDataMap(jobKey);
+                Trigger trigger = scheduler.getTriggersOfJob(jobKey).get(0);
+                BatchSchedule batchSchedule = batchRepository.findByName(jobKey.getName()).get();
                 BatchScheduleDto jobDto = BatchScheduleDto.builder()
+                        .id(batchSchedule.getId())
                         .name(jobKey.getName())
                         .url((String) dataMap.get("url"))
                         .description((String) dataMap.get("description"))
                         .cronExpression(getCronExpression(jobKey))
+                        .pauseYn(batchSchedule.getPauseYn())
+                        .nextFireTime(format.format(trigger.getNextFireTime()))
                         .build();
                 jobs.add(jobDto);
             }
@@ -139,12 +149,12 @@ public class BatchService {
         return false;
     }
     /** 스캐줄러 삭제 및 잡 삭제 */
-
-    public void deleteJob(List<BatchScheduleDto> jobDtos) throws Exception {
+    public void deleteJob(List<Long> batchJobList) throws Exception {
         JobKey jobKey = null;
         try {
-            for (BatchScheduleDto jobDto : jobDtos) {
-                jobKey = new JobKey(jobDto.getName(), jobDto.getName());
+            List<BatchSchedule> deleteList = batchRepository.findAllById(batchJobList);
+            for (BatchSchedule jobEntity : deleteList) {
+                jobKey = new JobKey(jobEntity.getName(), jobEntity.getName());
                 if (!isJobExists(jobKey)) {
                     throw new Exception("Job does not exits");
                 }
@@ -153,36 +163,37 @@ public class BatchService {
                 if (!deleteResult) {
                     throw new Exception("Job does not deleted");
                 }
-                List<Long> idList = jobDtos.stream().map(BatchScheduleDto::getId).collect(Collectors.toList());
-                batchRepository.deleteAllById(idList);
             }
+            batchRepository.deleteAllById(batchJobList);
         } catch (SchedulerException e) {
             log.error("[BatchSchedulerService] error occurred while deleting job with jobKey : {}", jobKey, e);
         }
     }
     /** 스캐줄러 정지 및 실행중인 잡 정지 */
-    public void pauseJob(List<BatchScheduleDto> jobDtos) throws Exception {
+    public void pauseJob(List<Long> batchJobList) throws Exception {
         JobKey jobKey = null;
         try {
-            for (BatchScheduleDto jobDto : jobDtos) {
-                jobKey = new JobKey(jobDto.getName(), jobDto.getName());
+            List<BatchSchedule> stopList = batchRepository.findAllById(batchJobList);
+            for (BatchSchedule jobEntity : stopList) {
+                jobKey = new JobKey(jobEntity.getName(), jobEntity.getName());
                 if (!isJobExists(jobKey)) {
                     throw new Exception("Job does not exits");
                 }
                 log.debug("[BatchSchedulerService] pausing job with jobKey : {}", jobKey);
                 schedulerFactoryBean.getScheduler().pauseJob(jobKey);
+                jobEntity.setPauseYn("Y");
             }
-            batchRepository.findAllById(jobDtos.stream().map(BatchScheduleDto::getId).collect(Collectors.toList())).forEach(vo-> vo.setPauseYn("Y"));
         } catch (SchedulerException e) {
             log.error("[BatchSchedulerService] error occurred while pausing job with jobKey : {}", jobKey, e);
         }
     }
     /** 정지중인 잡 및 스캐줄러 재개 */
-    public void resumeJob(List<BatchScheduleDto> jobDtos) throws Exception {
+    public void resumeJob(List<Long> batchJobList) throws Exception {
         JobKey jobKey = null;
         try {
-            for (BatchScheduleDto jobDto : jobDtos) {
-                jobKey = new JobKey(jobDto.getName(), jobDto.getName());
+            List<BatchSchedule> resumeList = batchRepository.findAllById(batchJobList);
+            for (BatchSchedule jobEntity : resumeList) {
+                jobKey = new JobKey(jobEntity.getName(), jobEntity.getName());
                 if (!isJobExists(jobKey)) {
                     throw new Exception("Job does not exits");
                 }
@@ -191,8 +202,8 @@ public class BatchService {
                 }
                 log.debug("[BatchSchedulerService] resuming job with jobKey : {}", jobKey);
                 schedulerFactoryBean.getScheduler().resumeJob(jobKey);
+                jobEntity.setPauseYn("N");
             }
-            batchRepository.findAllById(jobDtos.stream().map(BatchScheduleDto::getId).collect(Collectors.toList())).forEach(vo-> vo.setPauseYn("N"));
         } catch (SchedulerException e) {
             log.error("[BatchSchedulerService] error occurred while resuming job with jobKey : {}", jobKey, e);
         }
@@ -335,5 +346,9 @@ public class BatchService {
             e.printStackTrace();
         }
         return false;
+    }
+
+    public List<BatchHistoryDto> getAllJobHistoryList(Long id){
+        return batchRepository.findById(id).get().getBatchHistories().stream().map(batchHistory -> modelMapper.map(batchHistory, BatchHistoryDto.class)).collect(Collectors.toList());
     }
 }

@@ -3,8 +3,10 @@ package com.util.batch.domain;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.Column;
 import jakarta.persistence.Id;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
@@ -24,7 +26,8 @@ import java.time.LocalDateTime;
  ****************************************************/
 @Data
 @Builder
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@NoArgsConstructor
+@AllArgsConstructor
 public class BatchHistoryDto {
     private Long id;
     private String name;

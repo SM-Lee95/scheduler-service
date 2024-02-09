@@ -1,6 +1,7 @@
 package com.util.batch.controller;
 
 import com.util.batch.config.CronBatchJob;
+import com.util.batch.domain.BaseResponseBody;
 import com.util.batch.domain.BatchHistoryDto;
 import com.util.batch.domain.BatchScheduleDto;
 import com.util.batch.service.BatchService;
@@ -20,9 +21,9 @@ public class BatchSchedulerController {
     private final BatchService batchService;
     /** Batch Job 등록 */
     @PostMapping("/job")
-    public ResponseEntity<String> insertBatchJob(@RequestBody BatchScheduleDto batchScheduleDto) throws Exception {
+    public ResponseEntity<BaseResponseBody> insertBatchJob(@RequestBody BatchScheduleDto batchScheduleDto) throws Exception {
         batchService.addJob(batchScheduleDto, CronBatchJob.class);
-        return ResponseEntity.ok(null);
+        return ResponseEntity.ok(BaseResponseBody.of(200, "Success"));
     }
     /** 등록된 Job List 조회 */
     @GetMapping("/list")
@@ -31,31 +32,31 @@ public class BatchSchedulerController {
     }
     /** 등록된 Job 삭제 */
     @DeleteMapping("/job")
-    public ResponseEntity<String> deleteBatchJob(@RequestBody List<BatchScheduleDto> jobDtoList) throws Exception {
-        batchService.deleteJob(jobDtoList);
-        return ResponseEntity.ok(null);
+    public ResponseEntity<BaseResponseBody> deleteBatchJob(@RequestParam(name="id") List<Long> batchJobList) throws Exception {
+        batchService.deleteJob(batchJobList);
+        return ResponseEntity.ok(BaseResponseBody.of(200, "Success"));
     }
     /** 등록된 Job 정지 */
     @PutMapping("/job/pause")
-    public ResponseEntity<String> pauseBatchJob(@RequestBody List<BatchScheduleDto> jobDtoList) throws Exception {
-        batchService.pauseJob(jobDtoList);
-        return ResponseEntity.ok(null);
+    public ResponseEntity<BaseResponseBody> pauseBatchJob(@RequestParam(name="id") List<Long> batchJobList) throws Exception {
+        batchService.pauseJob(batchJobList);
+        return ResponseEntity.ok(BaseResponseBody.of(200, "Success"));
     }
     /** 정지된 Job 재개 */
     @PutMapping("/job/resume")
-    public ResponseEntity<String> resumeBatchJob(@RequestBody List<BatchScheduleDto> jobDtoList) throws Exception {
-        batchService.resumeJob(jobDtoList);
-        return ResponseEntity.ok(null);
+    public ResponseEntity<BaseResponseBody> resumeBatchJob(@RequestParam(name="id") List<Long> batchJobList) throws Exception {
+        batchService.resumeJob(batchJobList);
+        return ResponseEntity.ok(BaseResponseBody.of(200, "Success"));
     }
     /** Job 즉시 실행 */
     @PutMapping("/job/execute")
-    public ResponseEntity<String> startBatchJob(@RequestBody BatchScheduleDto batchScheduleDto) throws Exception {
+    public ResponseEntity<BaseResponseBody> startBatchJob(@RequestBody BatchScheduleDto batchScheduleDto) throws Exception {
         batchService.callBatchJob(batchScheduleDto.getName());
-        return ResponseEntity.ok(null);
+        return ResponseEntity.ok(BaseResponseBody.of(200, "Success"));
     }
     /** Job 히스토리 조회 */
     @GetMapping("/history")
-    public ResponseEntity<List<BatchHistoryDto>>  selectBatchJobHistoryList(BatchHistoryDto batchHistoryDto) {
-        return null;
+    public ResponseEntity<List<BatchHistoryDto>>  selectBatchJobHistoryList(@RequestParam(name="id") Long id) {
+        return ResponseEntity.ok(batchService.getAllJobHistoryList(id));
     }
 }

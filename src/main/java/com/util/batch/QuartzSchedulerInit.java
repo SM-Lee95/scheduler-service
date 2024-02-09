@@ -2,6 +2,7 @@ package com.util.batch;
 
 import com.util.batch.config.CronBatchJob;
 import com.util.batch.domain.BatchScheduleDto;
+import com.util.batch.entity.BatchSchedule;
 import com.util.batch.repository.BatchRepository;
 import com.util.batch.util.JobUtil;
 import jakarta.annotation.PostConstruct;
@@ -33,7 +34,7 @@ public class QuartzSchedulerInit {
     private void scheduleCronBatchJob() throws SchedulerException, ParseException {
         log.info("Start scheduleCronBatchJob");
         List<BatchScheduleDto> BatchScheduleDtoList = batchRepository.findAll().stream()
-                .map(vo->modelMapper.map(vo, BatchScheduleDto.class))
+                .map(vo-> modelMapper.map(vo, BatchScheduleDto.class))
                 .collect(Collectors.toList());
         for (BatchScheduleDto batchScheduleDto : BatchScheduleDtoList) {
             batchScheduleDto.setJobDataMapSelf();

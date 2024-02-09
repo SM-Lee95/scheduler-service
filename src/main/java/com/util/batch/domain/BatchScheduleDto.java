@@ -3,8 +3,10 @@ package com.util.batch.domain;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.persistence.Column;
 import jakarta.persistence.Id;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.quartz.JobDataMap;
 
 /***************************************************
@@ -23,7 +25,8 @@ import org.quartz.JobDataMap;
  ****************************************************/
 @Data
 @Builder
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@NoArgsConstructor
+@AllArgsConstructor
 public class BatchScheduleDto {
     private Long id;
     private String name;

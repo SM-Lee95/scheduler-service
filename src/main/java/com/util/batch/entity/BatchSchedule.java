@@ -1,8 +1,12 @@
 package com.util.batch.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 import org.springframework.context.annotation.Primary;
+import org.springframework.data.domain.Persistable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /***************************************************
  *
@@ -19,8 +23,12 @@ import org.springframework.context.annotation.Primary;
  *
  ****************************************************/
 @Entity(name = "batch_schedule")
-@Data
-public class BatchSchedule extends BaseEntity {
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class BatchSchedule extends BaseEntity implements Persistable<Long> {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -32,4 +40,10 @@ public class BatchSchedule extends BaseEntity {
     private String url;
     @Column(name="pause_yn")
     private String pauseYn;
+    @OneToMany(mappedBy = "batchSchedule", cascade = CascadeType.ALL)
+    private List<BatchHistory> batchHistories = new ArrayList<>();
+    @Override
+    public boolean isNew() {
+        return super.getRegDate() == null;
+    }
 }

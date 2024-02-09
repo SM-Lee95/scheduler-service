@@ -2,6 +2,7 @@ package com.util.batch.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.domain.Persistable;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -21,11 +22,12 @@ import java.time.LocalDateTime;
  *
  ****************************************************/
 @Entity(name = "batch_history")
-@Data
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class BatchHistory extends BaseEntity {
+public class BatchHistory extends BaseEntity implements Persistable<Long> {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -46,5 +48,9 @@ public class BatchHistory extends BaseEntity {
     private BatchSchedule batchSchedule;
     public void calculateExecutionTime() {
         this.setExcTime(Duration.between(startDate, endDate).getSeconds());
+    }
+    @Override
+    public boolean isNew() {
+        return super.getRegDate() == null;
     }
 }

@@ -8,24 +8,29 @@
                 <li th:replace="~{fragment/regist_item :: regist-item}">
                 </li>
                 <li class="nav-item no-arrow mx-1">
-                    <a href="#" class="btn btn-danger btn-icon-split"><span class="icon text-white-50"><i
-                            class="fas fa-minus"></i></span>
-                    </a>
+                    <button class="btn btn-danger" type="button" onclick="removeScheduleList()">
+                        <i class="fas fa-minus fa-sm"></i>
+                    </button>
                 </li>
                 <li class="nav-item no-arrow mx-1">
-                    <a href="#" class="btn btn-warning btn-icon-split"><span class="icon text-white-50"><i
-                            class="fas fa-ban"></i></span>
-                    </a>
+                    <button class="btn btn-warning" type="button" onclick="stopScheduleList()">
+                        <i class="fas fa-ban fa-sm"></i>
+                    </button>
                 </li>
                 <li class="nav-item no-arrow mx-1">
-                    <a href="#" class="btn btn-success btn-icon-split"><span class="icon text-white-50"><i
-                            class="fas fa-play"></i></span>
-                    </a>
+                    <button class="btn btn-success" type="button" onclick="playScheduleList()">
+                        <i class="fas fa-play fa-sm"></i>
+                    </button>
+                </li>
+                <li class="nav-item no-arrow mx-1">
+                    <button class="btn btn-primary" type="button" onclick="selectScheduleList()">
+                        <i class="fas fa-search fa-sm"></i>
+                    </button>
                 </li>
             </ul>
         </div>
     </div>
-    <div class="card shadow mb-4">
+    <div class="card shadow mb-4" id="main-card">
         <div class="card-header py-3">
             <h6 class="m-0 font-weight-bold text-primary">Scheduler List</h6>
         </div>
@@ -34,14 +39,13 @@
                 <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                     <thead>
                     <tr>
-                        <th>Group</th>
+                        <th><input type="checkbox" name="checkall" id="checkall"></th>
                         <th>Name</th>
+                        <th>Description</th>
                         <th>Expression</th>
+                        <th>URL</th>
                         <th>Status</th>
                         <th>Next Fire Time</th>
-                        <th>URL</th>
-                        <th>Description</th>
-                        <th>Event</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -50,7 +54,269 @@
             </div>
         </div>
     </div>
-</div>
+    <script type="text/javascript">
+        var table = $('#dataTable').DataTable();
+
+        function makeScheduleTable(data) {
+            table.destroy();
+            table = $('#dataTable').DataTable({
+                data: data,
+                columns: [
+                    {data: 'id'},
+                    {data: 'name'},
+                    {data: 'description'},
+                    {data: 'cronExpression'},
+                    {data: 'url'},
+                    {data: 'pauseYn'},
+                    {data: 'nextFireTime'}
+                ],
+                columnDefs: [
+                    {
+                        targets: 0,
+                        orderable: false,
+                        className: 'select-checkbox',
+                        render: function (data, type, full, meta) {
+                            return '<input type="checkbox" name="checkItem" value="' + data + '">';
+                        }
+                    },
+                    {
+                        targets: 5,
+                        render: function (data, type, full, meta) {
+                            return data == 'Y' ? "pause" : "scheduled";
+                        }
+                    },
+                    {
+                        targets: 1,
+                        render: function (data, type, full, meta) {
+                            return '<a href="javascript:selectDetailInfo(' + full.id + ')">' + data + '</a>';
+                        }
+                    }
+                ],
+                initComplete: function (settings, json) {
+                    $("#checkall").prop("checked", false);
+                    $("#checkall").click(function () {
+                        if ($(this).prop("checked")) {
+                            $("input[name=checkItem]").prop('checked', true);
+                        } else {
+                            $("input[name=checkItem]").prop('checked', false);
+                        }
+                    });
+                },
+            });
+        }
+
+        function selectScheduleList() {
+            $.ajax({
+                type: 'GET',
+                url: '/schedule/list',
+                headers: {"Content-Type": "application/json"},
+                success: function (result) {
+                    if (!result.statusCode) {
+                        makeScheduleTable(result);
+                    } else
+                        alert(result.message);
+                },
+                error: function (request, status, error) {
+                    alert("알 수 없는 오류가 발생 했습니다.");
+                    console.error(error);
+                }
+            });
+        }
+
+        function removeScheduleList() {
+            let checked = $("input[name=checkItem]:checked");
+            if (checked.length < 1) {
+                alert("체크된 아이템이 없습니다.");
+                return;
+            }
+            let deleteList = checked.map(function () {
+                return this.value
+            }).get();
+            if (!confirm("정말로 삭제 하시겠습니까?")) return;
+            $.ajax({
+                type: 'DELETE',
+                url: '/schedule/job',
+                data: {id: deleteList.join(",")},
+                success: function (result) {
+                    if (result.statusCode == 200) {
+                        alert("삭제를 완료했습니다.");
+                        selectScheduleList();
+                    } else
+                        alert(result.message);
+                },
+                error: function (request, status, error) {
+                    alert("알 수 없는 오류가 발생 했습니다.");
+                    console.error(error);
+                }
+            });
+        }
+
+        function stopScheduleList() {
+            let checked = $("input[name=checkItem]:checked");
+            if (checked.length < 1) {
+                alert("체크된 아이템이 없습니다.");
+                return;
+            }
+            let validateList = $("input[name=checkItem]").filter(function (index, vo) {
+                if ($(this).prop('checked') && table.row(index).data().pauseYn == 'Y')
+                    return true;
+                return false;
+            });
+            if (validateList.length > 0) {
+                alert("체크된 아이템 중 정지된 건이 존재합니다.");
+                return;
+            }
+            let pauseList = checked.map(function () {
+                return this.value
+            }).get();
+            if (!confirm("정말로 정지 하시겠습니까?")) return;
+            $.ajax({
+                type: 'PUT',
+                url: '/schedule/job/pause',
+                data: {id: pauseList.join(",")},
+                success: function (result) {
+                    if (result.statusCode == 200) {
+                        alert("정지를 완료했습니다.");
+                        selectScheduleList();
+                    } else
+                        alert(result.message);
+                },
+                error: function (request, status, error) {
+                    alert("알 수 없는 오류가 발생 했습니다.");
+                    console.error(error);
+                }
+            });
+        }
+
+        function playScheduleList() {
+            let checked = $("input[name=checkItem]:checked");
+            if (checked.length < 1) {
+                alert("체크된 아이템이 없습니다.");
+                return;
+            }
+            let validateList = $("input[name=checkItem]").filter(function (index, vo) {
+                if ($(this).prop('checked') && table.row(index).data().pauseYn == 'N') return true;
+                return false;
+            });
+            if (validateList.length > 0) {
+                alert("체크된 아이템 중 재개된 건이 존재합니다.");
+                return;
+            }
+            let resumeList = checked.map(function () {
+                return this.value
+            }).get();
+            if (!confirm("정말로 재개 하시겠습니까?")) return;
+            $.ajax({
+                type: 'PUT',
+                url: '/schedule/job/resume',
+                data: {id: resumeList.join(",")},
+                success: function (result) {
+                    if (result.statusCode == 200) {
+                        alert("재개 완료했습니다.");
+                        selectScheduleList();
+                    } else
+                        alert(result.message);
+                },
+                error: function (request, status, error) {
+                    alert("알 수 없는 오류가 발생 했습니다.");
+                    console.error(error);
+                }
+            });
+        }
+    </script>
+    <div class="card shadow mb-4" id="history-card" style="display: none">
+        <div class="card-header py-3">
+            <div class="row">
+                <div class="col-11"><h6 class="m-0 font-weight-bold text-primary">Scheduler History List</h6></div>
+                <div class="col-1">
+                    <button class="btn btn-primary" type="button" onclick="toggleCard('main-card')">
+                        <i class="fas fa-undo fa-sm"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="historyTable" width="100%" cellspacing="0">
+                    <thead>
+                    <tr>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Operation Time(ms)</th>
+                        <th>Status</th>
+                        <th>Type</th>
+                        <th>System Log</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript">
+        function toggleCard(id) {
+            $(".card").hide();
+            $("#" + id).show();
+        }
+
+        function selectDetailInfo(id) {
+            $.ajax({
+                type: 'GET',
+                url: '/schedule/history',
+                data: {id: id},
+                success: function (result) {
+                    if (!result.statusCode) {
+                        makeHistoryTable(result);
+                        toggleCard('history-card');
+                    } else
+                        alert(result.message);
+                },
+                error: function (request, status, error) {
+                    alert("알 수 없는 오류가 발생 했습니다.");
+                    console.error(error);
+                }
+            });
+        }
+
+        var historyTable = $('#historyTable').DataTable();
+
+        function makeHistoryTable(data) {
+            historyTable.destroy();
+            historyTable = $('#historyTable').DataTable({
+                data: data,
+                columns: [
+                    {data: 'startDate'},
+                    {data: 'endDate'},
+                    {data: 'excTime'},
+                    {data: 'resultStatus'},
+                    {data: 'isManual'},
+                    {data: 'resultMsg'}
+                ],
+                columnDefs: [
+                    {
+                        targets: 3,
+                        render: function (data, type, full, meta) {
+                            return data == 'S' ? 'Success' : 'Fail';
+                        }
+                    }, {
+                        targets: 4,
+                        render: function (data, type, full, meta) {
+                            return data == 'N' ? 'Auto' : 'Manual';
+                        }
+                    }, {
+                        targets: 5,
+                        render: function (data, type, full, meta) {
+                            return '<a href="javascript:void(0);"  data-toggle="modal" data-target="#historyModal' + full.id + '">System Detail Log</a>'
+                                + '<div class="modal fade" id="historyModal' + full.id + '" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" ' +
+                                'aria-hidden="true"><div class="modal-dialog" role="document"> ' +
+                                '<div class="modal-content"><div class="modal-body">' + data + '</div></div></div></div>';
+                        }
+                    },
+                ],
+            });
+        }
+    </script>
 </div>
 </body>
 </html>

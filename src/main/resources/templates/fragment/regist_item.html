@@ -2,9 +2,9 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <body>
 <li th:fragment="regist-item" class="nav-item dropdown no-arrow mx-1 ">
-    <a class="btn btn-primary btn-icon-split" href="#" data-toggle="modal" data-target="#registModal">
-        <span class="icon text-white-50"> <i class="fas fa-plus"></i></span>
-    </a>
+    <button class="btn btn-primary" type="button" data-toggle="modal" data-target="#registModal">
+        <i class="fas fa-plus fa-sm"></i>
+    </button>
     <div class="modal fade" id="registModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
          aria-hidden="true">
         <div class="modal-dialog" role="document">
@@ -58,13 +58,13 @@
             $.ajax({
                 type: 'POST',
                 url: '/schedule/job',
-                headers: {"Content-Type": "application/json"},
-                data: JSON.stringify(data),
+                data: data,
                 success: function (result) {
-                    if(result.success){
+                    if(result.statusCode == 200){
                         alert("등록을 완료했습니다.");
+                        $("#registModal").modal('hide');
                     }else
-                        alert(result.data);
+                        alert(result.message);
                 },
                 error: function (request, status, error) {
                     alert("알 수 없는 오류가 발생 했습니다.");
