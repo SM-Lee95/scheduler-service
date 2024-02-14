@@ -1,5 +1,5 @@
 server:
-  port: 8088
+  port: 8083
   tomcat:
     threads:
       max: 750
@@ -7,24 +7,18 @@ server:
 
 spring:
   profiles:
-    active: dev
+    active: prod
     include: default
   banner:
     location: classpath:/banner.txt
   devtools:
     livereload:
       enabled: true
-  thymeleaf:
-    cache: false
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
   datasource:
-    url: jdbc:h2:mem:test
-    username: happy
-    password: happy
-    driverClassName: org.h2.Driver
+    url: jdbc:mysql://localhost:3306/Plumgreentea?useSSL=false&useUnicode=true&serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true&characterEncoding=utf8
+    username: PlumUser
+    password: 970520
+    driver-class-name: com.mysql.cj.jdbc.Driver
   quartz:
     wait-for-jobs-to-complete-on-shutdown: true
     properties:
@@ -36,14 +30,21 @@ spring:
           jobStore:
             class: org.quartz.simpl.RAMJobStore
   jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
       ddl-auto: validate
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.H2Dialect
         format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+        default_batch_fetch_size: 1000
         show_sql: true
+  thymeleaf:
+    check-template-location: true
+    prefix: classpath:/templates/
+    suffix: .html
+    cache: false
+  mvc:
+    static-path-pattern: /static/** # spring mvc 정적경로 변경
 
 logging:
   level:
