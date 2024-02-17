@@ -16,10 +16,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
  * 1/30/24        iseongmu       최초 생성
  */
 @Controller
-@RequestMapping("/view")
+@RequestMapping("/schedule")
 public class BatchViewController {
-    @GetMapping("/info")
+    @GetMapping("/home")
     public String schedulerHistoryInfo(){
-        return "item";
+        return "index";
     }
 }
